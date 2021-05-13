@@ -31,7 +31,7 @@ This creates the files `00-reproduce-all-results.md` and `00-reproduce-all-resul
 
 The top of `00-reproduce-all-results.R` contains a command for installing all (but one) of the necessary packages, wrapped in a `if (FALSE)` statement so it won't be run on sourcing, but you can run it interactively if you need to.
 
-To run the astro example only, you need the `ipoptr` packqge, which requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html). This
+To run the astro example only, you need the `ipoptr` package, which requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html). This
 is laborious so if you want to not run the astro example, you can go in the `00-reproduce-all-results.R` and set `doastro = FALSE` at the top.
 
 The script will compile all the necessary `TMB` templates, which are including as files in the `aghq` package. It will create folders for each example inside the directory returned by `tempdir()`, and store all the plots, tables, and data (like `MCMC` results) from the paper there.
