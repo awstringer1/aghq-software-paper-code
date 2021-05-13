@@ -1,3 +1,6 @@
+
+
+```r
 ### IMPLEMENTING APPROXIMATE BAYESIAN INFERENCE USINGN ADAPTIVE QUADRATURE: THE AGHQ PACKAGE ###
 # This script reproduces the results in that paper
 # See https://github.com/awstringer1/aghq-software-paper-code for README
@@ -34,15 +37,134 @@ if (FALSE) {
 library(aghq)
 library(TMB)
 precompile()
+```
+
+```
+## Removing: libTMB.cpp libTMB.o libTMBdbg.cpp libTMBomp.cpp
+```
+
+```
+## Precompilation sources generated
+```
+
+```r
 library(tmbstan)
+```
+
+```
+## Loading required package: rstan
+```
+
+```
+## Loading required package: StanHeaders
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```
+## rstan (Version 2.21.2, GitRev: 2e1f913d3ca3)
+```
+
+```
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## options(mc.cores = parallel::detectCores()).
+## To avoid recompilation of unchanged Stan programs, we recommend calling
+## rstan_options(auto_write = TRUE)
+```
+
+```r
 library(parallel)
 options(mc.cores = parallel::detectCores())
 library(Matrix)
 library(glmmTMB)
 library(geostatsp)
-library(PrevMap)
-library(geoR)
+```
 
+```
+## Loading required package: raster
+```
+
+```
+## Loading required package: sp
+```
+
+```
+## 
+## Attaching package: 'raster'
+```
+
+```
+## The following object is masked from 'package:rstan':
+## 
+##     extract
+```
+
+```r
+library(PrevMap)
+```
+
+```
+## Loading required package: maxLik
+```
+
+```
+## Loading required package: miscTools
+```
+
+```
+## 
+## Please cite the 'maxLik' package as:
+## Henningsen, Arne and Toomet, Ott (2011). maxLik: A package for maximum likelihood estimation in R. Computational Statistics 26(3), 443-458. DOI 10.1007/s00180-010-0217-1.
+## 
+## If you have questions, suggestions, or comments regarding the 'maxLik' package, please use a forum or 'tracker' at maxLik's R-Forge site:
+## https://r-forge.r-project.org/projects/maxlik/
+```
+
+```
+## 
+## Attaching package: 'maxLik'
+```
+
+```
+## The following object is masked from 'package:raster':
+## 
+##     maxValue
+```
+
+```
+## Loading required package: pdist
+```
+
+```r
+library(geoR)
+```
+
+```
+## Warning: no DISPLAY variable so Tk is not available
+```
+
+```
+## --------------------------------------------------------------
+##  Analysis of Geostatistical Data
+##  For an Introduction to geoR go to http://www.leg.ufpr.br/geoR
+##  geoR version 1.8-1 (built on 2020-02-08) is now loaded
+## --------------------------------------------------------------
+```
+
+```
+## 
+## Attaching package: 'geoR'
+```
+
+```
+## The following objects are masked from 'package:geostatsp':
+## 
+##     matern, variog
+```
+
+```r
 ## Set up the directory structure ----
 # Each example gets its own directory within the tempdir()
 globalpath <- tempdir()
@@ -59,12 +181,25 @@ datapath <- plotpath
 # the TMB template is part of the package. move it to a temp dir
 # for compiling since this generates a bunch of new files
 file.copy(system.file('extsrc/02_disease.cpp',package='aghq'),globalpath)
+```
 
+```
+## [1] TRUE
+```
+
+```r
 # Get the Tomato disease data
 data("tswv", package = "EpiILMCT")
 
 # Compile TMB template-- only need to do once
 compile(file.path(globalpath,"02_disease.cpp"))
+```
+
+```
+## [1] 0
+```
+
+```r
 dyn.load(dynlib(file.path(globalpath,"02_disease")))
 
 
@@ -116,9 +251,22 @@ stanmod <- tmbstan(
 
 # Run time
 max(get_elapsed_time(stanmod)[,2])
+```
+
+```
+## [1] 199.599
+```
+
+```r
 # Number of iterations
 as.numeric(aghqtime) * stanmod@sim$iter / max(get_elapsed_time(stanmod)[,2])
+```
 
+```
+## [1] 47.0736
+```
+
+```r
 stansamps <- as.data.frame(stanmod)
 stansamps$alpha <- exp(stansamps$`par[1]`)
 stansamps$beta <- exp(stansamps$`par[2]`)
@@ -133,12 +281,22 @@ quaddensbeta <- quaddens[[2]]
 # pdf(file.path(plotpath,"alpha-postplot.pdf"),width=7,height=7)
 hist(stansamps$alpha,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axis = 1.5)
 with(quaddensalpha,lines(transparam,pdf_transparam))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
+
+```r
 # dev.off()
 
 # beta
 # pdf(file.path(plotpath,"beta-postplot.pdf"),width=7,height=7)
 hist(stansamps$beta,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axis = 1.5)
 with(quaddensbeta,lines(transparam,pdf_transparam))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-2.png)
+
+```r
 # dev.off()
 
 # summary stats
@@ -183,14 +341,39 @@ summstats <- data.frame(
 
 # readr::write_csv(summstats,file.path(plotpath,"summstattable.csv"))
 knitr::kable(summstats,digits = 3)
+```
 
+
+
+|stat  | alphamcmc| alphaaghq| betamcmc| betaaghq|
+|:-----|---------:|---------:|--------:|--------:|
+|mean  |     0.012|     0.012|    1.306|    1.304|
+|sd    |     0.002|     0.002|    0.155|    0.153|
+|q2.5  |     0.008|     0.008|    0.982|    0.981|
+|q97.5 |     0.017|     0.017|    1.590|    1.582|
+|KS    |        NA|     0.019|       NA|    0.023|
+
+```r
 # Joint moment
 compute_moment(
   quadmod,
   function(x) exp(x)[1] * 2^(-exp(x)[2])
 )
-mean(stansamps$alpha * 2^(-stansamps$beta))
+```
 
+```
+## [1] 0.004804631
+```
+
+```r
+mean(stansamps$alpha * 2^(-stansamps$beta))
+```
+
+```
+## [1] 0.004809063
+```
+
+```r
 #### END EXAMPLE 4.1 ####
 
 ## Example 4.2: Galactic Mass Estimation ----
@@ -201,10 +384,22 @@ if (!dir.exists(plotpath)) dir.create(plotpath)
 # the TMB template is part of the package. move it to a temp dir
 # for compiling since this generates a bunch of new files
 file.copy(system.file('extsrc/01_astro.cpp',package='aghq'),globalpath)
+```
 
+```
+## [1] TRUE
+```
+
+```r
 # Compile TMB template-- only need to do once
 compile(file.path(globalpath,"01_astro.cpp"))
+```
 
+```
+## [1] 0
+```
+
+```r
 data("gcdatalist",package = 'aghq')
 dyn.load(dynlib(file.path(globalpath,"01_astro")))
 
@@ -351,9 +546,243 @@ ipopt_result <- ipoptr::ipoptr(
   opts = list(obj_scaling_factor = 1,
               tol = 1e-03)
 )
+```
+
+```
+## 
+## ******************************************************************************
+## This program contains Ipopt, a library for large-scale nonlinear optimization.
+##  Ipopt is released as open source code under the Eclipse Public License (EPL).
+##          For more information visit https://github.com/coin-or/Ipopt
+## ******************************************************************************
+## 
+## This is Ipopt version 3.13.4, running with linear solver mumps.
+## NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+## 
+## Number of nonzeros in equality constraint Jacobian...:        0
+## Number of nonzeros in inequality constraint Jacobian.:      143
+## Number of nonzeros in Lagrangian Hessian.............:       10
+## 
+## Total number of variables............................:        4
+##                      variables with only lower bounds:        0
+##                 variables with lower and upper bounds:        4
+##                      variables with only upper bounds:        0
+## Total number of equality constraints.................:        0
+## Total number of inequality constraints...............:       72
+##         inequality constraints with only lower bounds:       72
+##    inequality constraints with lower and upper bounds:        0
+##         inequality constraints with only upper bounds:        0
+## 
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##    0  8.6500412e+02 0.00e+00 5.38e+01  -1.0 0.00e+00    -  0.00e+00 0.00e+00   0
+##    1  8.0734482e+02 0.00e+00 3.75e+00  -1.0 3.54e+00    -  5.59e-01 5.00e-01f  2
+##    2  8.0533402e+02 0.00e+00 6.36e-01  -1.0 6.80e+00    -  6.33e-01 1.00e+00h  1
+## Warning: Cutting back alpha due to evaluation error
+##    3  7.9408914e+02 0.00e+00 1.01e+01  -1.0 3.52e+01  -2.0 3.00e-01 2.41e-01h  2
+##    4  7.6409501e+02 0.00e+00 2.25e+01  -1.0 5.15e+01  -2.5 4.55e-01 9.61e-01h  1
+##    5  7.6358394e+02 0.00e+00 2.53e+01  -1.0 9.98e+01    -  9.24e-01 1.35e-02h  1
+##    6  7.5386705e+02 0.00e+00 6.84e+00  -1.0 9.97e+01    -  1.00e+00 8.28e-01h  1
+##    7  7.5306386e+02 0.00e+00 1.59e+01  -1.0 3.89e+01    -  7.79e-01 1.16e-01h  1
+##    8  7.4824023e+02 0.00e+00 2.41e+00  -1.0 3.63e+01    -  1.00e+00 1.00e+00h  1
+##    9  7.4496566e+02 0.00e+00 4.61e+00  -1.0 1.13e+01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   10  7.4353781e+02 0.00e+00 1.21e+01  -1.0 8.88e+00    -  1.00e+00 1.00e+00h  1
+##   11  7.4370536e+02 0.00e+00 2.04e+01  -1.0 6.72e+00    -  3.25e-01 1.00e+00h  1
+##   12  7.4362787e+02 0.00e+00 7.83e+00  -1.0 4.91e+00    -  1.00e+00 1.00e+00h  1
+##   13  7.4372858e+02 0.00e+00 6.86e-01  -1.0 1.95e+00    -  1.00e+00 1.00e+00h  1
+##   14  7.4378472e+02 0.00e+00 1.02e-02  -1.0 8.10e-01    -  1.00e+00 1.00e+00h  1
+##   15  7.4365448e+02 0.00e+00 1.06e+00  -1.7 2.25e+00    -  1.00e+00 1.00e+00h  1
+##   16  7.4357828e+02 0.00e+00 5.61e-03  -1.7 1.08e+00    -  1.00e+00 1.00e+00h  1
+##   17  7.4351133e+02 0.00e+00 3.34e-03  -1.7 1.22e-01    -  1.00e+00 1.00e+00h  1
+##   18  7.4345552e+02 0.00e+00 3.26e-03  -1.7 1.13e-01    -  1.00e+00 1.00e+00h  1
+##   19  7.4341121e+02 0.00e+00 2.94e-03  -1.7 1.44e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   20  7.4337805e+02 0.00e+00 2.38e-03  -1.7 1.83e-01    -  1.00e+00 1.00e+00h  1
+##   21  7.4335496e+02 0.00e+00 1.65e-03  -1.7 2.19e-01    -  1.00e+00 1.00e+00h  1
+##   22  7.4334010e+02 0.00e+00 9.46e-04  -1.7 2.36e-01    -  1.00e+00 1.00e+00h  1
+##   23  7.4333121e+02 0.00e+00 4.38e-04  -1.7 2.18e-01    -  1.00e+00 1.00e+00h  1
+##   24  7.4332615e+02 0.00e+00 1.70e-04  -1.7 1.68e-01    -  1.00e+00 1.00e+00h  1
+##   25  7.4332334e+02 0.00e+00 5.92e-05  -1.7 1.11e-01    -  1.00e+00 1.00e+00h  1
+##   26  7.4329578e+02 0.00e+00 5.04e-01  -2.5 1.13e+00    -  7.09e-01 1.00e+00h  1
+##   27  7.4323398e+02 0.00e+00 2.73e-01  -2.5 8.92e+00    -  1.00e+00 5.46e-01h  1
+##   28  7.4316925e+02 0.00e+00 2.90e-02  -2.5 7.28e-01    -  7.73e-01 1.00e+00h  1
+##   29  7.4310353e+02 0.00e+00 3.53e-03  -2.5 3.80e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   30  7.4303952e+02 0.00e+00 3.98e-03  -2.5 3.11e-01    -  1.00e+00 1.00e+00h  1
+##   31  7.4297515e+02 0.00e+00 4.21e-03  -2.5 5.73e-02    -  1.00e+00 1.00e+00h  1
+##   32  7.4291021e+02 0.00e+00 4.45e-03  -2.5 5.44e-02    -  1.00e+00 1.00e+00h  1
+##   33  7.4284464e+02 0.00e+00 4.70e-03  -2.5 5.45e-02    -  1.00e+00 1.00e+00h  1
+##   34  7.4277841e+02 0.00e+00 4.96e-03  -2.5 5.45e-02    -  1.00e+00 1.00e+00h  1
+##   35  7.4271147e+02 0.00e+00 5.24e-03  -2.5 5.46e-02    -  1.00e+00 1.00e+00h  1
+##   36  7.4264379e+02 0.00e+00 5.54e-03  -2.5 5.46e-02    -  1.00e+00 1.00e+00h  1
+##   37  7.4257532e+02 0.00e+00 5.85e-03  -2.5 5.47e-02    -  1.00e+00 1.00e+00h  1
+##   38  7.4250601e+02 0.00e+00 6.18e-03  -2.5 5.47e-02    -  1.00e+00 1.00e+00h  1
+##   39  7.4243583e+02 0.00e+00 6.53e-03  -2.5 5.48e-02    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   40  7.4236473e+02 0.00e+00 6.89e-03  -2.5 5.48e-02    -  1.00e+00 1.00e+00h  1
+##   41  7.4229265e+02 0.00e+00 7.28e-03  -2.5 5.48e-02    -  1.00e+00 1.00e+00h  1
+##   42  7.4221954e+02 0.00e+00 7.69e-03  -2.5 5.49e-02    -  1.00e+00 1.00e+00h  1
+##   43  7.4214534e+02 0.00e+00 8.12e-03  -2.5 5.49e-02    -  1.00e+00 1.00e+00h  1
+##   44  7.4207000e+02 0.00e+00 8.57e-03  -2.5 5.50e-02    -  1.00e+00 1.00e+00h  1
+##   45  7.4199346e+02 0.00e+00 9.05e-03  -2.5 5.51e-02    -  1.00e+00 1.00e+00h  1
+##   46  7.4191563e+02 0.00e+00 9.55e-03  -2.5 5.51e-02    -  1.00e+00 1.00e+00h  1
+##   47  7.4183647e+02 0.00e+00 1.01e-02  -2.5 5.51e-02    -  1.00e+00 1.00e+00h  1
+##   48  7.4175589e+02 0.00e+00 1.06e-02  -2.5 5.52e-02    -  1.00e+00 1.00e+00h  1
+##   49  7.4167382e+02 0.00e+00 1.12e-02  -2.5 5.52e-02    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   50  7.4159018e+02 0.00e+00 1.18e-02  -2.5 5.53e-02    -  1.00e+00 1.00e+00h  1
+##   51  7.4150488e+02 0.00e+00 1.25e-02  -2.5 5.54e-02    -  1.00e+00 1.00e+00h  1
+##   52  7.4141784e+02 0.00e+00 1.32e-02  -2.5 5.85e-02    -  1.00e+00 1.00e+00h  1
+##   53  7.4132895e+02 0.00e+00 1.39e-02  -2.5 6.18e-02    -  1.00e+00 1.00e+00h  1
+##   54  7.4123813e+02 0.00e+00 1.46e-02  -2.5 6.53e-02    -  1.00e+00 1.00e+00h  1
+##   55  7.4114526e+02 0.00e+00 1.54e-02  -2.5 6.89e-02    -  1.00e+00 1.00e+00h  1
+##   56  7.4105025e+02 0.00e+00 1.62e-02  -2.5 7.27e-02    -  1.00e+00 1.00e+00h  1
+##   57  7.4095297e+02 0.00e+00 1.71e-02  -2.5 7.68e-02    -  1.00e+00 1.00e+00h  1
+##   58  7.4085330e+02 0.00e+00 1.80e-02  -2.5 8.11e-02    -  1.00e+00 1.00e+00h  1
+##   59  7.4075113e+02 0.00e+00 1.90e-02  -2.5 8.55e-02    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   60  7.4064631e+02 0.00e+00 1.99e-02  -2.5 9.03e-02    -  1.00e+00 1.00e+00h  1
+##   61  7.4053871e+02 0.00e+00 2.10e-02  -2.5 9.52e-02    -  1.00e+00 1.00e+00h  1
+##   62  7.4042819e+02 0.00e+00 2.20e-02  -2.5 1.00e-01    -  1.00e+00 1.00e+00h  1
+##   63  7.4031459e+02 0.00e+00 2.31e-02  -2.5 1.06e-01    -  1.00e+00 1.00e+00h  1
+##   64  7.4019776e+02 0.00e+00 2.43e-02  -2.5 1.12e-01    -  1.00e+00 1.00e+00h  1
+##   65  7.4007754e+02 0.00e+00 2.55e-02  -2.5 1.18e-01    -  1.00e+00 1.00e+00h  1
+##   66  7.3995374e+02 0.00e+00 2.67e-02  -2.5 1.24e-01    -  1.00e+00 1.00e+00h  1
+##   67  7.3982619e+02 0.00e+00 2.80e-02  -2.5 1.31e-01    -  1.00e+00 1.00e+00h  1
+##   68  7.3969470e+02 0.00e+00 2.94e-02  -2.5 1.38e-01    -  1.00e+00 1.00e+00h  1
+##   69  7.3955909e+02 0.00e+00 3.07e-02  -2.5 1.45e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   70  7.3941913e+02 0.00e+00 3.21e-02  -2.5 1.53e-01    -  1.00e+00 1.00e+00h  1
+##   71  7.3927463e+02 0.00e+00 3.36e-02  -2.5 1.61e-01    -  1.00e+00 1.00e+00h  1
+##   72  7.3912536e+02 0.00e+00 3.51e-02  -2.5 1.69e-01    -  1.00e+00 1.00e+00h  1
+##   73  7.3897110e+02 0.00e+00 3.66e-02  -2.5 1.78e-01    -  1.00e+00 1.00e+00h  1
+##   74  7.3881160e+02 0.00e+00 3.82e-02  -2.5 1.87e-01    -  1.00e+00 1.00e+00h  1
+##   75  7.3864664e+02 0.00e+00 3.98e-02  -2.5 1.97e-01    -  1.00e+00 1.00e+00h  1
+##   76  7.3847595e+02 0.00e+00 4.14e-02  -2.5 2.07e-01    -  1.00e+00 1.00e+00h  1
+##   77  7.3829927e+02 0.00e+00 4.30e-02  -2.5 2.17e-01    -  1.00e+00 1.00e+00h  1
+##   78  7.3811635e+02 0.00e+00 4.47e-02  -2.5 2.28e-01    -  1.00e+00 1.00e+00h  1
+##   79  7.3792689e+02 0.00e+00 4.64e-02  -2.5 2.39e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   80  7.3773062e+02 0.00e+00 4.80e-02  -2.5 2.51e-01    -  1.00e+00 1.00e+00h  1
+##   81  7.3752724e+02 0.00e+00 4.97e-02  -2.5 2.63e-01    -  1.00e+00 1.00e+00h  1
+##   82  7.3731647e+02 0.00e+00 5.14e-02  -2.5 2.75e-01    -  1.00e+00 1.00e+00h  1
+##   83  7.3709798e+02 0.00e+00 5.31e-02  -2.5 2.88e-01    -  1.00e+00 1.00e+00h  1
+##   84  7.3687147e+02 0.00e+00 5.47e-02  -2.5 3.02e-01    -  1.00e+00 1.00e+00h  1
+##   85  7.3663663e+02 0.00e+00 5.64e-02  -2.5 3.15e-01    -  1.00e+00 1.00e+00h  1
+##   86  7.3639312e+02 0.00e+00 5.80e-02  -2.5 3.29e-01    -  1.00e+00 1.00e+00h  1
+##   87  7.3614062e+02 0.00e+00 5.95e-02  -2.5 3.44e-01    -  1.00e+00 1.00e+00h  1
+##   88  7.3587879e+02 0.00e+00 6.10e-02  -2.5 3.59e-01    -  1.00e+00 1.00e+00h  1
+##   89  7.3560730e+02 0.00e+00 6.25e-02  -2.5 3.75e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##   90  7.3532580e+02 0.00e+00 6.39e-02  -2.5 3.90e-01    -  1.00e+00 1.00e+00h  1
+##   91  7.3503394e+02 0.00e+00 6.51e-02  -2.5 4.07e-01    -  1.00e+00 1.00e+00h  1
+##   92  7.3473139e+02 0.00e+00 6.63e-02  -2.5 4.23e-01    -  1.00e+00 1.00e+00h  1
+##   93  7.3441779e+02 0.00e+00 6.74e-02  -2.5 4.40e-01    -  1.00e+00 1.00e+00h  1
+##   94  7.3409279e+02 0.00e+00 6.84e-02  -2.5 4.57e-01    -  1.00e+00 1.00e+00h  1
+##   95  7.3375604e+02 0.00e+00 6.92e-02  -2.5 4.75e-01    -  1.00e+00 1.00e+00h  1
+##   96  7.3340719e+02 0.00e+00 6.99e-02  -2.5 4.92e-01    -  1.00e+00 1.00e+00h  1
+##   97  7.3304589e+02 0.00e+00 7.05e-02  -2.5 5.10e-01    -  1.00e+00 1.00e+00h  1
+##   98  7.3267179e+02 0.00e+00 7.09e-02  -2.5 5.28e-01    -  1.00e+00 1.00e+00h  1
+##   99  7.3228455e+02 0.00e+00 7.11e-02  -2.5 5.47e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  100  7.3188382e+02 0.00e+00 7.11e-02  -2.5 5.65e-01    -  1.00e+00 1.00e+00h  1
+##  101  7.3146927e+02 0.00e+00 7.09e-02  -2.5 5.83e-01    -  1.00e+00 1.00e+00h  1
+##  102  7.3104054e+02 0.00e+00 7.05e-02  -2.5 6.02e-01    -  1.00e+00 1.00e+00h  1
+##  103  7.3059733e+02 0.00e+00 6.98e-02  -2.5 6.20e-01    -  1.00e+00 1.00e+00h  1
+##  104  7.3013929e+02 0.00e+00 6.89e-02  -2.5 6.39e-01    -  1.00e+00 1.00e+00h  1
+##  105  7.2966609e+02 0.00e+00 6.77e-02  -2.5 6.57e-01    -  1.00e+00 1.00e+00h  1
+##  106  7.2917743e+02 0.00e+00 6.63e-02  -2.5 6.75e-01    -  1.00e+00 1.00e+00h  1
+##  107  7.2867299e+02 0.00e+00 6.45e-02  -2.5 6.93e-01    -  1.00e+00 1.00e+00h  1
+##  108  7.2815245e+02 0.00e+00 6.24e-02  -2.5 7.11e-01    -  1.00e+00 1.00e+00h  1
+##  109  7.2761550e+02 0.00e+00 5.99e-02  -2.5 7.28e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  110  7.2706185e+02 0.00e+00 5.71e-02  -2.5 7.45e-01    -  1.00e+00 1.00e+00h  1
+##  111  7.2649118e+02 0.00e+00 5.39e-02  -2.5 7.62e-01    -  1.00e+00 1.00e+00h  1
+##  112  7.2590320e+02 0.00e+00 5.02e-02  -2.5 7.78e-01    -  1.00e+00 1.00e+00h  1
+##  113  7.2529762e+02 0.00e+00 4.61e-02  -2.5 7.93e-01    -  1.00e+00 1.00e+00h  1
+##  114  7.2467414e+02 0.00e+00 4.14e-02  -2.5 8.08e-01    -  1.00e+00 1.00e+00h  1
+##  115  7.2403245e+02 0.00e+00 3.62e-02  -2.5 8.23e-01    -  1.00e+00 1.00e+00h  1
+##  116  7.2337227e+02 0.00e+00 3.03e-02  -2.5 8.36e-01    -  1.00e+00 1.00e+00h  1
+##  117  7.2269331e+02 0.00e+00 2.38e-02  -2.5 8.49e-01    -  1.00e+00 1.00e+00h  1
+##  118  7.2199527e+02 0.00e+00 1.64e-02  -2.5 8.61e-01    -  1.00e+00 1.00e+00h  1
+##  119  7.2127788e+02 0.00e+00 8.21e-03  -2.5 8.72e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  120  7.2054088e+02 0.00e+00 7.00e-03  -2.5 8.82e-01    -  1.00e+00 1.00e+00h  1
+##  121  7.1978402e+02 0.00e+00 1.13e-02  -2.5 8.91e-01    -  1.00e+00 1.00e+00h  1
+##  122  7.1900709e+02 0.00e+00 2.29e-02  -2.5 8.98e-01    -  1.00e+00 1.00e+00h  1
+##  123  7.1820996e+02 0.00e+00 3.59e-02  -2.5 9.04e-01    -  1.00e+00 1.00e+00h  1
+##  124  7.1739257e+02 0.00e+00 5.06e-02  -2.5 9.09e-01    -  1.00e+00 1.00e+00h  1
+##  125  7.1655503e+02 0.00e+00 6.73e-02  -2.5 9.12e-01    -  1.00e+00 1.00e+00h  1
+##  126  7.1569764e+02 0.00e+00 8.62e-02  -2.5 9.13e-01    -  1.00e+00 1.00e+00h  1
+##  127  7.1482101e+02 0.00e+00 1.08e-01  -2.5 9.11e-01    -  1.00e+00 1.00e+00h  1
+##  128  7.1392624e+02 0.00e+00 1.32e-01  -2.5 9.08e-01    -  1.00e+00 1.00e+00h  1
+##  129  7.1301504e+02 0.00e+00 1.60e-01  -2.5 9.01e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  130  7.1209009e+02 0.00e+00 1.91e-01  -2.5 8.90e-01    -  1.00e+00 1.00e+00h  1
+##  131  7.1115540e+02 0.00e+00 2.26e-01  -2.5 8.75e-01    -  1.00e+00 1.00e+00h  1
+##  132  7.1021685e+02 0.00e+00 2.64e-01  -2.5 8.54e-01    -  1.00e+00 1.00e+00h  1
+##  133  7.0928289e+02 0.00e+00 3.05e-01  -2.5 8.26e-01    -  1.00e+00 1.00e+00h  1
+##  134  7.0836548e+02 0.00e+00 3.45e-01  -2.5 7.91e-01    -  1.00e+00 1.00e+00h  1
+##  135  7.0748110e+02 0.00e+00 3.80e-01  -2.5 7.46e-01    -  1.00e+00 1.00e+00h  1
+##  136  7.0665179e+02 0.00e+00 4.01e-01  -2.5 6.89e-01    -  1.00e+00 1.00e+00h  1
+##  137  7.0590581e+02 0.00e+00 3.96e-01  -2.5 6.20e-01    -  1.00e+00 1.00e+00h  1
+##  138  7.0527715e+02 0.00e+00 3.50e-01  -2.5 5.40e-01    -  1.00e+00 1.00e+00h  1
+##  139  7.0480303e+02 0.00e+00 2.54e-01  -2.5 4.57e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  140  7.0451848e+02 0.00e+00 1.14e-01  -2.5 4.60e-01    -  1.00e+00 1.00e+00h  1
+##  141  7.0444099e+02 0.00e+00 3.86e-02  -2.5 7.56e-01    -  3.08e-01 1.00e+00h  1
+##  142  7.0439755e+02 0.00e+00 7.04e-03  -2.5 1.12e+01    -  2.40e-01 1.00e+00h  1
+##  143  7.0436765e+02 0.00e+00 5.55e-03  -2.5 1.36e+00    -  1.00e+00 1.00e+00h  1
+##  144  7.0434392e+02 0.00e+00 2.58e-03  -2.5 2.80e+00    -  1.00e+00 1.00e+00h  1
+##  145  7.0432595e+02 0.00e+00 2.20e-03  -2.5 1.88e-01    -  1.00e+00 1.00e+00h  1
+##  146  7.0431377e+02 0.00e+00 1.69e-03  -2.5 2.69e-01    -  1.00e+00 1.00e+00h  1
+##  147  7.0430685e+02 0.00e+00 9.95e-04  -2.5 4.37e-01    -  1.00e+00 1.00e+00h  1
+##  148  7.0430388e+02 0.00e+00 3.21e-04  -2.5 6.06e-01    -  1.00e+00 1.00e+00h  1
+##  149  7.0430298e+02 0.00e+00 6.81e-05  -2.5 4.94e-01    -  1.00e+00 1.00e+00h  1
+## iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+##  150  7.0430272e+02 0.00e+00 1.83e-05  -2.5 1.84e-01    -  1.00e+00 1.00e+00h  1
+##  151  7.0430264e+02 0.00e+00 6.17e-06  -2.5 5.08e-02    -  1.00e+00 1.00e+00h  1
+##  152  7.0429673e+02 0.00e+00 2.58e-03  -3.8 1.79e+00    -  1.00e+00 1.00e+00h  1
+##  153  7.0429602e+02 0.00e+00 5.03e-04  -3.8 1.37e+00    -  9.17e-01 1.00e+00h  1
+##  154  7.0429604e+02 0.00e+00 2.37e-05  -3.8 1.28e+00    -  1.00e+00 1.00e+00h  1
+##  155  7.0429603e+02 0.00e+00 8.90e-07  -3.8 2.55e-01    -  1.00e+00 1.00e+00h  1
+##  156  7.0429603e+02 0.00e+00 5.27e-08  -3.8 3.42e-02    -  1.00e+00 1.00e+00h  1
+##  157  7.0429603e+02 0.00e+00 1.50e-09  -3.8 4.69e-03    -  1.00e+00 1.00e+00h  1
+##  158  7.0429601e+02 0.00e+00 1.19e-05  -5.0 1.18e-01    -  1.00e+00 1.00e+00h  1
+## 
+## Number of Iterations....: 158
+## 
+##                                    (scaled)                 (unscaled)
+## Objective...............:   7.0429600951775024e+02    7.0429600951775024e+02
+## Dual infeasibility......:   1.1867880423488170e-05    1.1867880423488170e-05
+## Constraint violation....:   0.0000000000000000e+00    0.0000000000000000e+00
+## Complementarity.........:   1.4984177986315354e-05    1.4984177986315354e-05
+## Overall NLP error.......:   1.4984177986315354e-05    1.4984177986315354e-05
+## 
+## 
+## Number of objective function evaluations             = 163
+## Number of objective gradient evaluations             = 159
+## Number of equality constraint evaluations            = 0
+## Number of inequality constraint evaluations          = 163
+## Number of equality constraint Jacobian evaluations   = 0
+## Number of inequality constraint Jacobian evaluations = 159
+## Number of Lagrangian Hessian evaluations             = 158
+## Total CPU secs in IPOPT (w/o function evaluations)   =      0.102
+## Total CPU secs in NLP function evaluations           =      0.573
+## 
+## EXIT: Optimal Solution Found.
+```
+
+```r
 optruntime <- difftime(Sys.time(),tm,units = 'secs')
 cat('Run time for mass model optimization:',optruntime,'seconds.\n')
+```
 
+```
+## Run time for mass model optimization: 0.8168342 seconds.
+```
+
+```r
 ## AGHQ ----
 # Create the optimization template
 useropt <- list(
@@ -370,7 +799,13 @@ tm <- Sys.time()
 astroquad <- aghq::aghq(ff,5,thetastart,optresults = useropt,control = default_control(negate=TRUE))
 quadruntime <- difftime(Sys.time(),tm,units = 'secs')
 cat("Run time for mass model quadrature:",quadruntime,"seconds.\n")
+```
 
+```
+## Run time for mass model quadrature: 0.2324929 seconds.
+```
+
+```r
 # Total runtime
 aghqtime <- optruntime + quadruntime
 
@@ -402,10 +837,22 @@ rownames(tmbsddat) <- NULL
 # Times
 # AGHQ
 as.numeric(aghqtime) * stanmod@sim$iter / as.numeric(stantime)
+```
+
+```
+## [1] 2329.083
+```
+
+```r
 # TMB
 as.numeric(optruntime) * stanmod@sim$iter / as.numeric(stantime)
+```
 
+```
+## [1] 1813.043
+```
 
+```r
 # Redefine parameters functions for plotting
 get_psi0 <- function(theta)
   (parambounds$Psi0[2] - parambounds$Psi0[1]) * 
@@ -474,6 +921,11 @@ hist(standata$psi0,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axis
 with(psi0pdf,lines(transparam,pdf_transparam,lwd=2))
 with(psi0pdf,lines(transparam,Psi0prior(transparam),lty = 'dashed',lwd=2))
 with(tmbpsi0,lines(psi0,pdf,lty='dotdash',lwd=2))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-3.png)
+
+```r
 # dev.off()
 
 # pdf(file.path(plotpath,"gamma-plot.pdf"),width = 7,height = 7)
@@ -481,6 +933,11 @@ hist(standata$gamma,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axi
 with(gammapdf,lines(transparam,pdf_transparam,lwd=2))
 with(gammapdf,lines(transparam,gammaprior(transparam),lty = 'dashed',lwd=2))
 with(tmbgamma,lines(gamma,pdf,lty='dotdash',lwd=2))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-4.png)
+
+```r
 # dev.off()
 
 # pdf(file.path(plotpath,"alpha-plot.pdf"),width = 7,height = 7)
@@ -488,6 +945,11 @@ hist(standata$alpha,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axi
 with(alphapdf,lines(transparam,pdf_transparam,lwd=2))
 with(alphapdf,lines(transparam,alphaprior(transparam),lty = 'dashed',lwd=2))
 with(tmbalpha,lines(alpha,pdf,lty='dotdash',lwd=2))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-5.png)
+
+```r
 # dev.off()
 
 # pdf(file.path(plotpath,"beta-plot.pdf"),width = 7,height = 7)
@@ -495,6 +957,11 @@ hist(standata$beta,freq=FALSE,breaks=50,main = "",xlab = "",cex.lab=1.5,cex.axis
 with(betapdf,lines(transparam,pdf_transparam,lwd=2))
 with(betapdf,lines(transparam,betaprior(transparam),lty = 'dashed',lwd=2))
 with(tmbbeta,lines(beta,pdf,lty='dotdash',lwd=2))
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-6.png)
+
+```r
 # dev.off()
 
 # KS distances
@@ -546,8 +1013,18 @@ kstable <- data.frame(
 
 # readr::write_csv(kstable,file.path(plotpath,"astro-ks-table.csv"))
 knitr::kable(kstable,digits = 3)
+```
 
 
+
+|var   | ks_aghq| ks_tmb|
+|:-----|-------:|------:|
+|psi0  |   0.010|  0.044|
+|gamma |   0.007|  0.031|
+|alpha |   0.035|  0.156|
+|beta  |   0.010|  0.025|
+
+```r
 # Inference for the mass profile
 Mr <- function(r,theta) {
   p = get_psi0(theta[1])
@@ -578,6 +1055,11 @@ title(ylab=bquote('M(r) ('~10^12~M[sun]~')'),cex.lab=1.5,line=2.3)
 axis(1,at=seq(0,150,by=25),cex.axis=1.5)
 lines(rtodo,Mrout - 2*Mrsdout,lty='dashed',lwd=2)
 lines(rtodo,Mrout + 2*Mrsdout,lty='dashed',lwd=2)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-7.png)
+
+```r
 # dev.off()
 
 # With MCMC
@@ -594,13 +1076,38 @@ title(ylab=bquote('M(r) ('~10^12~M[sun]~')'),cex.lab=1.5,line=2.3)
 axis(1,at=seq(0,150,by=25),cex.axis=1.5)
 lines(rtodo,lowervals,lty='dashed',lwd=2)
 lines(rtodo,uppervals,lty='dashed',lwd=2)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-8.png)
+
+```r
 # dev.off()
 
 # Empirical RMSE
 sqrt(mean( (Mrout - meanvals)^2 )) # 0.0004119291
-sqrt(mean( ((Mrout - 2*Mrsdout) - lowervals)^2 )) # 0.007427573
-sqrt(mean( ((Mrout + 2*Mrsdout) - uppervals)^2 )) # 0.006063218
+```
 
+```
+## [1] 0.0004119291
+```
+
+```r
+sqrt(mean( ((Mrout - 2*Mrsdout) - lowervals)^2 )) # 0.007427573
+```
+
+```
+## [1] 0.007427573
+```
+
+```r
+sqrt(mean( ((Mrout + 2*Mrsdout) - uppervals)^2 )) # 0.006063218
+```
+
+```
+## [1] 0.006063218
+```
+
+```r
 #### END EXAMPLE 4.2 ####
 
 ## Example 5.1: Loaloa, without zero-inflation ----
@@ -836,6 +1343,13 @@ Wdim <- dim(Q_matrix(c(0,0)))[1]
 # AGHQ
 tm <- Sys.time()
 cat("Doing AGHQ, time = ",format(tm),"\n")
+```
+
+```
+## Doing AGHQ, time =  2021-05-12 23:35:54
+```
+
+```r
 loaloaquad <- aghq::marginal_laplace(
   ff,
   5,
@@ -844,10 +1358,23 @@ loaloaquad <- aghq::marginal_laplace(
 aghqtime <- difftime(Sys.time(),tm,units = 'secs')
 # save(loaloaquad,file = file.path(savepath,paste0("loaloaquad",savestamp,".RData")))
 cat("AGHQ took: ",format(aghqtime),"\n")
+```
 
+```
+## AGHQ took:  108.7772 secs
+```
+
+```r
 # Spatial interpolation for AGHQ
 tm <- Sys.time()
 cat("Doing AGHQ simulation, time = ",format(tm),"\n")
+```
+
+```
+## Doing AGHQ simulation, time =  2021-05-12 23:37:43
+```
+
+```r
 samps <- sample_marginal(loaloaquad,1e02) # very fast
 
 # predictions (prevalence)
@@ -860,27 +1387,59 @@ simbrick <- simulate_spatial_fields(
   pointsdata = loaloa,
   resolution = list(nrow = 25,ncol = 50)
 )
+```
+
+```
+## New output format of RFsimulate: S4 object of class 'RFsp';
+## for a bare, but faster array format use 'RFoptions(spConform=FALSE)'.
+```
+
+```r
 simbrick <- simbrick + beta
 aghqsimtime <- difftime(Sys.time(),tm,units = 'secs')
 # raster::writeRaster(simbrick,file = file.path(savepath,paste0("loaloa-simbrick-aghq",savestamp,".grd")),overwrite = TRUE)
 cat("AGHQ simulation took: ",format(aghqsimtime),"\n")
+```
 
+```
+## AGHQ simulation took:  95.88611 secs
+```
 
+```r
 ## INLA ----
 # Using geostatsp::glgm()
 
 tm <- Sys.time()
 cat("Doing INLA, time = ",format(tm),"\n")
+```
+
+```
+## Doing INLA, time =  2021-05-12 23:39:19
+```
+
+```r
 loaFit = glgm(formula = y ~ 1,
               data = loaloa, grid = 50,
               family = "binomial",
               Ntrials = loaloa$N, shape = maternconstants$nu, buffer = 1e05,
               prior = list(sd = c(u = sigma_u, alpha = sigma_alpha), range = c(u = rho_u, alpha = rho_alpha))) 
+```
+
+```
+## Warning in proj4string(x): CRS object has comment, which is lost in output
+```
+
+```r
 inlatime <- difftime(Sys.time(),tm,units = 'secs')
 # save(loaFit,file = file.path(savepath,paste0("loaloainla",savestamp,".RData")))
 cat("INLA took: ",format(inlatime),"\n")
+```
 
+```
+## INLA took:  42.72 secs
+```
 
+```r
 # prediction
 # Border for Cameroon and Nigeria
 cameroonBorderLL = raster::getData("GADM", country=c('CMR'), level=2)
@@ -925,6 +1484,13 @@ plot_loaloa <- function(plotraster,breaks) {
 # prevmap
 tm <- Sys.time()
 cat("Doing MCML, time = ",format(tm),"\n")
+```
+
+```
+## Doing MCML, time =  2021-05-12 23:41:30
+```
+
+```r
 initvaluemodel <- glm(cbind(y,N-y)~1,data = loaloa@data,family=binomial)
 initbeta0 <- coef(initvaluemodel)
 loaloa2$logit <- log((loaloa2$NO_INF + 0.5)/(loaloa2$NO_EXAM - loaloa2$NO_INF + 0.5))
@@ -932,6 +1498,13 @@ loaloa2$logit <- log((loaloa2$NO_INF + 0.5)/(loaloa2$NO_EXAM - loaloa2$NO_INF + 
 vari <- variog(coords = as.matrix(loaloa2[, c("LONGITUDE", "LATITUDE")]),
                data = loaloa2$logit,
                uvec = c(0, 0.1, 0.15, 0.2, 0.4, 0.8, 1.4, 1.8, 2, 2.5, 3))
+```
+
+```
+## variog: computing omnidirectional variogram
+```
+
+```r
 vari.fit <- variofit(vari, 
                      ini.cov.pars = c(2, 0.2),
                      cov.model = "matern",
@@ -939,7 +1512,15 @@ vari.fit <- variofit(vari,
                      nugget = 0 ,
                      fix.kappa = TRUE, 
                      kappa = 0.5)
+```
 
+```
+## variofit: covariance model used is matern 
+## variofit: weights used: npairs 
+## variofit: minimisation function used: optim
+```
+
+```r
 # change "phi" to be in meters, 10^4 starting value
 par0 <- c(initbeta0, vari.fit$cov.pars, vari.fit$nugget)
 c.mcmc <- control.mcmc.MCML(
@@ -955,11 +1536,29 @@ tmp <- capture.output({
                                       fixed.rel.nugget = 0,
                                       start.cov.pars = c(1e04))
 })
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-9.png)
+
+```r
 mcmltime <- difftime(Sys.time(),tm,units = 'secs')
 cat("MCML took: ",format(mcmltime),"\n")
+```
 
+```
+## MCML took:  37.61451 secs
+```
+
+```r
 tm <- Sys.time()
 cat("Doing MCML Sims, time = ",format(tm),"\n")
+```
+
+```
+## Doing MCML Sims, time =  2021-05-12 23:42:07
+```
+
+```r
 tmp <- capture.output({
   preds_mcml <- spatial.pred.binomial.MCML(
     fit.MCML1,
@@ -980,10 +1579,23 @@ mcmlsimtime <- difftime(Sys.time(),tm,units = 'secs')
 # save(fit.MCML1,preds_mcml,file = file.path(savepath,paste0("loaloamcml",savestamp,".RData")))
 # raster::writeRaster(mcmcl_predraster,file.path(savepath,paste0("loaloamcml-preds",savestamp,".grd")),overwrite = TRUE)
 cat("MCML Sims took: ",format(mcmlsimtime),"\n")
+```
 
+```
+## MCML Sims took:  19.74328 secs
+```
+
+```r
 ## MCMC ----
 tm <- Sys.time()
 cat("Doing MCMC, time = ",format(tm),"\n")
+```
+
+```
+## Doing MCMC, time =  2021-05-12 23:42:27
+```
+
+```r
 # priors
 lam <- -log(rho_alpha) * rho_u
 thepriors <- control.prior(
@@ -1016,10 +1628,22 @@ tmp <- capture.output({
 
 mcmctime <- difftime(Sys.time(),tm,units = 'secs')
 cat("MCMC took: ",format(mcmctime),"\n")
+```
 
+```
+## MCMC took:  477.4258 secs
+```
+
+```r
 tm <- Sys.time()
 cat("Doing MCMC Sims, time = ",format(tm),"\n")
+```
 
+```
+## Doing MCMC Sims, time =  2021-05-12 23:50:24
+```
+
+```r
 tmp <- capture.output({
   pred.Bayes <- spatial.pred.binomial.Bayes(
     fit.Bayes, 
@@ -1037,8 +1661,13 @@ mcmcsimtime <- difftime(Sys.time(),tm,units = 'secs')
 # save(fit.Bayes,pred.Bayes,file = file.path(savepath,paste0("loaloamcmc",savestamp,".RData")))
 # raster::writeRaster(bayesian_predraster,file.path(savepath,paste0("loaloamcmc-preds",savestamp,".grd")),overwrite = TRUE)
 cat("MCMC Sims took: ",format(mcmcsimtime),"\n")
+```
 
+```
+## MCMC Sims took:  2209.03 secs
+```
 
+```r
 # Plot them!
 
 
@@ -1048,18 +1677,38 @@ aghqpostmean <- calc(ilogit(simbrick),mean)
 
 # png(file.path(plotpath,paste0("aghq-mean-map",savestamp,".png")))
 plot_loaloa(aghqpostmean,br)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-10.png)
+
+```r
 # dev.off()
 
 # png(file.path(plotpath,paste0("mcml-mean-map",savestamp,".png")))
 plot_loaloa(mcmcl_predraster,br)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-11.png)
+
+```r
 # dev.off()
 
 # png(file.path(plotpath,paste0("inla-mean-map",savestamp,".png")))
 plot_loaloa(loaFit$raster$predict.invlogit,br)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-12.png)
+
+```r
 # dev.off()
 
 # png(file.path(plotpath,paste0("mcmc-mean-map",savestamp,".png")))
 plot_loaloa(bayesian_predraster,br)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-13.png)
+
+```r
 # dev.off()
 # difference
 difftable <- data.frame(
@@ -1091,7 +1740,16 @@ difftable <- data.frame(
 )
 # readr::write_csv(difftable,file.path(savepath,paste0("diff-table-loaloa",savestamp,".csv")))
 knitr::kable(difftable,digits = 3)
+```
 
+
+
+|comparison | mcml_mcmc| inla_mcmc| inla_mcml| aghq_mcml| aghq_mcmc| aghq_inla|
+|:----------|---------:|---------:|---------:|---------:|---------:|---------:|
+|mean       |     0.046|     0.030|     0.070|     0.048|     0.014|     0.033|
+|max        |     0.218|     0.225|     0.249|     0.236|     0.101|     0.266|
+
+```r
 # covariance params
 aghqsigmamean <- compute_moment(loaloaquad,function(x) get_sigma(exp(x[1]),exp(x[2])))
 aghqrhomean <- compute_moment(loaloaquad,function(x) get_rho(exp(x[1]),exp(x[2])))
@@ -1143,7 +1801,18 @@ covparamtable <- data.frame(
 )
 # readr::write_csv(covparamtable,file.path(savepath,paste0("covparam-table-loaloa",savestamp,".csv")))
 knitr::kable(covparamtable,digits = 3)
+```
 
+
+
+|method | sigmamean| sigmalower| sigmaupper|   rhomean| rholower|  rhoupper|
+|:------|---------:|----------:|----------:|---------:|--------:|---------:|
+|AGHQ   |     1.479|      1.198|      1.808|  63918.42| 45431.71|  87531.22|
+|INLA   |     2.060|      1.424|      3.073| 151928.75| 93809.99| 246066.09|
+|MCML   |     1.402|      1.229|      1.599|  15666.12| 12336.35|  19894.64|
+|MCMC   |     1.560|      1.262|      1.971|  68035.57| 48395.67|  95782.60|
+
+```r
 # Write the timing table
 timingtable <- data.frame(
   task = c("AGHQ","INLA","MCML","MCMC","AGHQSim","MCMLSim","MCMCSim"),
@@ -1151,7 +1820,21 @@ timingtable <- data.frame(
 )
 # readr::write_csv(timingtable,file.path(savepath,paste0("timing-table-loaloa",savestamp,".csv")))
 knitr::kable(timingtable,digits = 3)
+```
 
+
+
+|task    |time          |
+|:-------|:-------------|
+|AGHQ    |108.777 secs  |
+|INLA    |42.720 secs   |
+|MCML    |37.615 secs   |
+|MCMC    |477.426 secs  |
+|AGHQSim |95.886 secs   |
+|MCMLSim |19.743 secs   |
+|MCMCSim |2209.030 secs |
+
+```r
 # Total and num iter
 totaltable <- c(
   mcmc = as.numeric(timingtable[timingtable$task == 'MCMC','time']) + as.numeric(timingtable[timingtable$task == 'MCMCSim','time']),
@@ -1161,7 +1844,14 @@ totaltable <- c(
 )
 effiter <- totaltable[2:4] * 6000 / totaltable[1]
 effiter
+```
 
+```
+##      aghq      inla      mcml 
+## 457.10043  95.41198 128.10439
+```
+
+```r
 #### END OF EXAMPLE 5.1 ####
 
 ## Example 5.2: Loaloa with zero-inflation
@@ -1172,9 +1862,22 @@ if (!dir.exists(plotpath)) dir.create(plotpath)
 savepath <- plotpath
 
 file.copy(system.file('extsrc/05_loaloazip.cpp',package='aghq'),globalpath)
+```
 
+```
+## [1] TRUE
+```
+
+```r
 # Compile TMB template-- only need to do once
 compile(file.path(globalpath,"05_loaloazip.cpp"))
+```
+
+```
+## [1] 0
+```
+
+```r
 dyn.load(dynlib(file.path(globalpath,"05_loaloazip")))
 
 # Initialize time variables
@@ -1271,6 +1974,13 @@ ff <- MakeADFun(data = datlist,
 
 tm <- Sys.time()
 cat("Doing AGHQ, time = ",format(tm),"\n")
+```
+
+```
+## Doing AGHQ, time =  2021-05-13 00:27:39
+```
+
+```r
 loaloazipquad <- aghq::marginal_laplace_tmb(
   ff,
   3,
@@ -1279,7 +1989,13 @@ loaloazipquad <- aghq::marginal_laplace_tmb(
 aghqtime <- difftime(Sys.time(),tm,units = 'secs')
 # save(loaloazipquad,file = file.path(savepath,paste0("loaloazipquad",savestamp,".RData")))
 cat("AGHQ took: ",format(aghqtime),"\n")
+```
 
+```
+## AGHQ took:  88.42085 secs
+```
+
+```r
 simulate_spatial_fields <- function(U,
                                     theta,
                                     pointsdata,
@@ -1308,6 +2024,13 @@ simulate_spatial_fields <- function(U,
 ## Post samples ----
 
 cat("Doing AGHQ field simulations, time = ",format(tm),"\n")
+```
+
+```
+## Doing AGHQ field simulations, time =  2021-05-13 00:27:39
+```
+
+```r
 loazippostsamples <- sample_marginal(loaloazipquad,100)
 # Extract out the U and V
 postU <- loazippostsamples$samps[c(1:190), ]
@@ -1383,12 +2106,28 @@ brzero <- c(.35,.5,.6,.7,.8,.9,.91,.92,.93,.94,.95,1)
 
 # pdf(file.path(plotpath,paste0("loaloa-zip-postmean.pdf")),width=7,height=7)
 plot_loaloa(simfieldsmeanzip,brzero)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-14.png)
+
+```r
 # dev.off()
 # pdf(file.path(plotpath,paste0("loaloa-risk-postmean.pdf")),width=7,height=7)
 plot_loaloa(simfieldsmeanrisk,br)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-15.png)
+
+```r
 # dev.off()
 cat("AGHQ simulations took: ",format(aghqsimtime),"\n")
+```
 
+```
+## AGHQ simulations took:  347.9878 secs
+```
+
+```r
 # Write the timing table
 timingtable <- data.frame(
   task = c("AGHQ","MCMC","AGHQSim","MCMCSim"),
@@ -1396,8 +2135,18 @@ timingtable <- data.frame(
 )
 # readr::write_csv(timingtable,file.path(savepath,paste0("timing-table",savestamp,".csv")))
 knitr::kable(timingtable,digits = 3)
+```
 
 
+
+|task    |time         |
+|:-------|:------------|
+|AGHQ    |88.421 secs  |
+|MCMC    |0.000 secs   |
+|AGHQSim |347.988 secs |
+|MCMCSim |0.000 secs   |
+
+```r
 #### END EXAMPLE 5.2 ####
 
 ## Example 6.1: the zero-inflated overdispersed Poisson from glmmTMB ----
@@ -1419,6 +2168,22 @@ zipmod <- glmmTMB(
   family = nbinom2,
   doFit = TRUE
 )
+```
+
+```
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+```
+
+```
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+```
+
+```r
 glmmTMBtime <- difftime(Sys.time(),tm,units = 'secs')
 # glmmTMB creates all the necessary information
 zipmodinfo <- glmmTMB(
@@ -1429,6 +2194,20 @@ zipmodinfo <- glmmTMB(
   family = nbinom2,
   doFit = FALSE
 )
+```
+
+```
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+
+## Warning in Matrix::sparseMatrix(dims = c(0, 0), i = integer(0), j =
+## integer(0), : 'giveCsparse' has been deprecated; setting 'repr = "T"' for you
+```
+
+```r
 # Use this to create the TMB template
 ff <- with(zipmodinfo,{
   MakeADFun(
@@ -1456,6 +2235,11 @@ with(zipsigmapdf[[1]],plot(transparam,pdf_transparam,type='l',main='',ylab='',xl
 title(ylab="Density",cex.lab=1.5,line=2.3)
 axis(1,cex.axis=1.5,at=seq(0,1.2,by=.2))
 abline(v = sqrt(as.numeric(summary(zipmod)$varcor$cond$site)),lty='dashed')
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-16.png)
+
+```r
 # dev.off()
 
 # confidence/credible intervals for random effects
@@ -1473,6 +2257,11 @@ points(xx+offset,Uest,type='p',pch=20)
 with(rr,axis(1,at = xx,labels = as.character(grp)))
 with(rr,arrows(x0=xx-offset,y0=condval-qnorm(.975)*condsd,y1=condval+qnorm(.975)*condsd,length=.05,angle=90,code=3))
 arrows(x0=xx+offset,y0=Ulower,y1=Uupper,length=.05,angle=90,code=3)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-17.png)
+
+```r
 # dev.off()
 
 #### END EXAMPLE 6.1 ####
@@ -1505,20 +2294,89 @@ funlist <- list(
 thequadrature <- aghq::aghq(ff = funlist,k = 3,startingvalue = 0)
 
 summary(thequadrature)
-plot(thequadrature)
+```
 
+```
+## AGHQ on a 1 dimensional posterior with  3 quadrature points
+## 
+## The posterior mode is: 1.493925 
+## 
+## The log of the normalizing constant/marginal likelihood is: -23.32123 
+## 
+## The posterior Hessian at the mode is:
+##      [,1]
+## [1,]   49
+## 
+## The covariance matrix used for the quadrature is...
+##            [,1]
+## [1,] 0.02040816
+## 
+## ...and its Cholesky is:
+##           [,1]
+## [1,] 0.1428571
+## 
+## Here are some moments and quantiles for theta:
+## 
+##            mean   median     mode        sd     2.5%    97.5%
+## theta1 1.483742 1.482532 1.493925 0.1424943 1.204135 1.762909
+```
+
+```r
+plot(thequadrature)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-18.png)![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-19.png)
+
+```r
 # The posterior
 thequadrature$normalized_posterior$nodesandweights
+```
+
+```
+##     theta1   weights   logpost logpost_normalized
+## 1 1.246489 0.2674745 -23.67784         -0.3566038
+## 2 1.493925 0.2387265 -22.29426          1.0269677
+## 3 1.741361 0.2674745 -23.92603         -0.6047982
+```
+
+```r
 # The log normalization constant:
 thequadrature$normalized_posterior$lognormconst
+```
+
+```
+## [1] -23.32123
+```
+
+```r
 # Compare to the truth: 
 lgamma(1 + sum(y)) - (1 + sum(y)) * log(length(y) + 1) - sum(lgamma(y+1))
+```
+
+```
+## [1] -23.31954
+```
+
+```r
 # Quite accurate with only n = 10 and k = 3; this example is very simple.
 # The mode found by the optimization:
 thequadrature$optresults$mode
+```
+
+```
+## [1] 1.493925
+```
+
+```r
 # The true mode:
 log((sum(y) + 1)/(length(y) + 1))
+```
 
+```
+## [1] 1.493925
+```
+
+```r
 # Compute the pdf for theta
 transformation <- list(totheta = log,fromtheta = exp)
 pdfwithlambda <- compute_pdf_and_cdf(
@@ -1526,6 +2384,15 @@ pdfwithlambda <- compute_pdf_and_cdf(
   transformation = transformation
 )[[1]]
 head(pdfwithlambda,n = 2)
+```
+
+```
+##       theta         pdf          cdf transparam pdf_transparam
+## 1 0.9990534 0.008604132 0.000000e+00   2.715710    0.003168281
+## 2 1.0000441 0.008809832 8.728201e-06   2.718402    0.003240813
+```
+
+```r
 lambdapostsamps <- sample_marginal(thequadrature,1e04,transformation = transformation)[[1]]
 # Plot along with the true posterior
 # pdf(file = file.path(plotpath,'lambda-post-plot.pdf'))
@@ -1534,25 +2401,71 @@ with(pdfwithlambda,{
   lines(transparam,pdf_transparam)
   lines(transparam,dgamma(transparam,1+sum(y),1+length(y)),lty='dashed')
 })
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-20.png)
+
+```r
 # dev.off()
 
 # Check if the posterior integrates to 1, by computing the "moment" of "1":
 compute_moment(thequadrature$normalized_posterior,
                ff = function(x) 1)
+```
+
+```
+## [1] 1
+```
+
+```r
 # Posterior mean for theta:
 compute_moment(thequadrature$normalized_posterior,
                ff = function(x) x)
+```
+
+```
+## [1] 1.483742
+```
+
+```r
 # Posterior mean for lambda = exp(theta)
 compute_moment(thequadrature$normalized_posterior,
                ff = function(x) exp(x))
+```
+
+```
+## [1] 4.454407
+```
+
+```r
 # Compare to the truth:
 (sum(y) + 1)/(length(y) + 1)
+```
 
+```
+## [1] 4.454545
+```
+
+```r
 # Quantiles
 compute_quantiles(
   thequadrature,
   q = c(.01,.25,.50,.75,.99),
   transformation = transformation
 )[[1]]
+```
+
+```
+##       1%      25%      50%      75%      99% 
+## 3.166469 4.000544 4.404081 4.848323 6.149735
+```
+
+```r
 # The truth:
 qgamma(c(.01,.25,.50,.75,.99),1+sum(y),1+length(y))
+```
+
+```
+## [1] 3.108896 4.010430 4.424279 4.865683 6.067076
+```
+
