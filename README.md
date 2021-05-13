@@ -23,9 +23,9 @@ To run the examples I recommend you look at their individual files below. If you
 
 To run all the examples in the paper:
 
-1. Install the latest version of `knitr`: `R -e 'install.packages("knitr")'
+1. Install the latest version of `knitr`: `R -e 'install.packages("knitr")'`
 
-2. Navigate to where you put the code and run the command `R -e 'knitr::spin("00-reproduce-all-results.R")'.
+2. Navigate to where you put the code and run the command `R -e 'knitr::spin("00-reproduce-all-results.R")'`.
 
 This creates the files `00-reproduce-all-results.md` and `00-reproduce-all-results.html` which contain all the results from the paper.
 
