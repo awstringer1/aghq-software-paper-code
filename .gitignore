@@ -4,3 +4,7 @@
 *.Rdata
 *.png
 figure/*
+*.md
+*.Rmd
+*.html
+

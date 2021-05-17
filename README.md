@@ -9,13 +9,39 @@ The following are instructions for reproducing the results in the paper.
 
 ## Install the package
 
-First, install the `aghq` package development version:
+First, install the `aghq` package stable version:
 
 ```
-devtools::install_github('awstringer1/aghq')
+install.packages('aghq')
 ```
 
-You will also need some other packages and these are listed in each example below.
+You will also need some other packages. Most can be obtained easily from `CRAN`, as follows:
+
+- TMB
+- tmbstan
+- parallel
+- glmmTMB
+- geostatsp
+- PrevMap
+- geoR
+- trustOptim
+- numDeriv
+
+There are three other packages that are more difficult to install. In all cases the script
+checks for them and if they are not installed, throws a warning and skips the example in which
+they are used:
+
+- `ipoptr`: used in Example 4.2, Galactic Mass Estimation. Requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html). This
+is a laborious installation so can be skipped.
+
+- `INLA`: used as one method to compare to in Example 5.1, Loaloa. Not on `CRAN`, can be installed
+from [this page](https://www.r-inla.org/download-install). 
+
+- `EpiILMCT`: a dataset from this package is used 
+
+Note that the `aghq` package itself has only a few dependencies and they are all on `CRAN`. But
+some examples compare to other methods, use data from other packages, or, in one case, use one function from another
+package in an intermediate step. 
 
 ## Run all examples at once
 
@@ -30,9 +56,6 @@ To run all the examples in the paper:
 This creates the files `00-reproduce-all-results.md` and `00-reproduce-all-results.html` which contain all the results from the paper.
 
 The top of `00-reproduce-all-results.R` contains a command for installing all (but one) of the necessary packages, wrapped in a `if (FALSE)` statement so it won't be run on sourcing, but you can run it interactively if you need to.
-
-To run the astro example only, you need the `ipoptr` package, which requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html). This
-is laborious so if you want to not run the astro example, you can go in the `00-reproduce-all-results.R` and set `doastro = FALSE` at the top.
 
 The script will compile all the necessary `TMB` templates, which are including as files in the `aghq` package. It will create folders for each example inside the directory returned by `tempdir()`, and store all the plots, tables, and data (like `MCMC` results) from the paper there.
 
