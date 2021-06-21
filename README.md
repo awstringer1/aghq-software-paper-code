@@ -58,6 +58,8 @@ The top of `00-reproduce-all-results.R` contains a command for installing all (b
 
 The script will compile all the necessary `TMB` templates, which are including as files in the `aghq` package. It will create folders for each example inside the directory returned by `tempdir()`, and store all the plots, tables, and data (like `MCMC` results) from the paper there.
 
+The script has been tested on **Mac** and **Ubuntu**. I don't have access to a Windows machine, unfortunately.
+
 All the datasets used in the paper are available in the installed packages (including `aghq`).
 
 ## Run each example on its own
