@@ -36,7 +36,7 @@ they are used:
 - `INLA`: used as one method to compare to in Example 5.1, Loaloa. Not on `CRAN`, can be installed
 from [this page](https://www.r-inla.org/download-install). 
 
-- `EpiILMCT`: a dataset from this package is used 
+- `EpiILMCT`: a dataset from this package is used in Example 4.1.
 
 Note that the `aghq` package itself has only a few dependencies and they are all on `CRAN`. But
 some examples compare to other methods, use data from other packages, or, in one case, use one function from another
