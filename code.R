@@ -13,7 +13,20 @@
 #   If this happens, it usually comes back up in a day or so.
 #   - The compilation of the TMB templates creates a ton of output from the compiler. Each
 #   template can take a few minutes at least to compile.
-
+#
+# TIMING:
+#   - The most recent testing on a private Ubuntu server yielded run times as follows:
+#      - Example 2: <10s
+#      - Example 4.1: 6m24s
+#      - Example 4.2: 5m43s
+#      - Example 5.1: 47m50s
+#      - Example 5.2: 10m44s
+#      - Example 6.1: 11s
+#
+#   - The only operation that takes a long time is the MCMC within Example 5.1. 
+#     To skip Example 5.1, set dofast = TRUE
+dofast = FALSE
+#
 # VARIABLES TO SET:
 # Example 5.2:
 # Set the resolution for the spatial interpolations.
@@ -59,6 +72,8 @@ if (!('INLA' %in% installed.packages()[ ,'Package'])) {
   warning("No installation of INLA found. Skipping the loaloa example.\n")
   doloaloa <- FALSE
 }
+# But, don't do loaloa if the dofast flag is TRUE
+if (dofast) doloaloa <- FALSE
 
 
 ## Install and load packages ----
