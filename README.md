@@ -50,11 +50,11 @@ To run all the examples in the paper:
 
 1. Install the latest version of `knitr`: `R -e 'install.packages("knitr")'`
 
-2. Navigate to where you put the code and run the command `R -e 'knitr::spin("00-reproduce-all-results.R")'`.
+2. Navigate to where you put the code and run the command `R -e 'knitr::spin("code.R")'`.
 
-This creates the files `00-reproduce-all-results.md` and `00-reproduce-all-results.html` which contain all the results from the paper.
+This creates the files `code.md` and `code.html` which contain all the results from the paper.
 
-The top of `00-reproduce-all-results.R` contains a command for installing all (but one) of the necessary packages, wrapped in a `if (FALSE)` statement so it won't be run on sourcing, but you can run it interactively if you need to.
+The top of `code.R` contains a command for installing all (but one) of the necessary packages, wrapped in a `if (FALSE)` statement so it won't be run on sourcing, but you can run it interactively if you need to.
 
 The script will compile all the necessary `TMB` templates, which are including as files in the `aghq` package. It will create folders for each example inside the directory returned by `tempdir()`, and store all the plots, tables, and data (like `MCMC` results) from the paper there.
 
