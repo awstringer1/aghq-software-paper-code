@@ -1,5 +1,5 @@
 # AGHQ Software Paper Code
-Code for examples in AGHQ software paper (https://arxiv.org/abs/2101.04468).
+Code for examples in AGHQ [software paper](https://arxiv.org/abs/2101.04468).
 
 See also the `aghq` [package repository](https://github.com/awstringer1/aghq), and the `CRAN` [package page](https://cran.r-project.org/web/packages/aghq/index.html).
 
