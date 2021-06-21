@@ -39,8 +39,8 @@ from [this page](https://www.r-inla.org/download-install).
 - `EpiILMCT`: a dataset from this package is used in Example 4.1.
 
 Note that the `aghq` package itself has only a few dependencies and they are all on `CRAN`. But
-some examples compare to other methods, use data from other packages, or, in one case, use one function from another
-package in an intermediate step. 
+some examples compare to other methods, use data from other packages, or use functions from other
+packages in an intermediate, example-specific steps.
 
 ## Run all examples at once
 
