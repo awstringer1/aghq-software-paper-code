@@ -78,11 +78,11 @@ Some examples require additional packages as indicated in their individual scrip
 
 To consider each of the six examples in the paper individually, you can use the followig six code files, as follows:
 
-1. Example 4.1 (infectious disease model): `02-disease.R`
-2. Example 4.2 (galactic mass estimation): `01-astro.R`
-3. Example 5.1 (Loaloa, without zero-inflation): `03-loaloa.R`
-4. Example 5.2 (Loaloa, with zero-inflation): `05-loaloazip.R`
-5. Example 2 (basic use): `07-basic-use.R`
+1. Example 2 (basic use): `07-basic-use.R`
+2. Example 4.1 (infectious disease model): `02-disease.R`
+3. Example 4.2 (galactic mass estimation): `01-astro.R`
+4. Example 5.1 (Loaloa, without zero-inflation): `03-loaloa.R`
+5. Example 5.2 (Loaloa, with zero-inflation): `05-loaloazip.R`
 6. Example 6 (Poisson ZIP from `glmmTMB`): `08-poisson-zip.R`
 
 # Further Notes
