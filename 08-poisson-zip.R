@@ -114,5 +114,3 @@ if (domcmc) {
   
   dev.off()
 }
-
-
