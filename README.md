@@ -31,8 +31,7 @@ There are three other packages that are more difficult to install. In all cases 
 checks for them and if they are not installed, throws a warning and skips the example in which
 they are used:
 
-- `ipoptr`: used in Example 4.2, Galactic Mass Estimation. Requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html). This
-is a laborious installation so can be skipped.
+- `ipoptr`: used in Example 4.2, Galactic Mass Estimation. Requires a working installation of `IPOPT`. See [here](https://coin-or.github.io/Ipopt/INSTALL.html).
 
 - `INLA`: used as one method to compare to in Example 5.1, Loaloa. Not on `CRAN`, can be installed
 from [this page](https://www.r-inla.org/download-install). 
